@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, ImageBackground, Alert } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, Image, ImageBackground, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/core';
@@ -34,8 +34,8 @@ const CamScreen = () => {
     });
 
     if (!result.canceled) {
-      setImageUri(result.uri);
-      predict(result.uri);
+      setImageUri(result.assets[0].uri); // Ensure that this is the correct way to access the image URI
+      setPrediction(null); // Reset prediction when a new image is taken
     }
   };
 
@@ -54,25 +54,25 @@ const CamScreen = () => {
     });
 
     if (!result.canceled) {
-      setImageUri(result.uri);
-      predict(result.uri);
+      setImageUri(result.assets[0].uri);
+      setPrediction(null);
     }
   };
 
-  const predict = async (uri) => {
+  const predict = async () => {
     try {
-      if (typeof uri !== 'string') {
+      if (typeof imageUri !== 'string') {
         throw new Error('Invalid image URI');
       }
 
-      const uriParts = uri.split('/');
+      const uriParts = imageUri.split('/');
       const imageName = uriParts[uriParts.length - 1];
-      const response = await fetch(uri);
+      const response = await fetch(imageUri);
       const blob = await response.blob();
 
       const formData = new FormData();
       formData.append('file', {
-        uri: uri,
+        uri: imageUri,
         type: 'image/jpeg',
         name: imageName,
       });
@@ -104,17 +104,23 @@ const CamScreen = () => {
 
       <View style={styles.contentContainer}>
         <View style={styles.container}>
-          <TouchableOpacity style={[styles.optionButton, styles.takePhotoButton]} onPress={openCamera}>
-            <Text style={styles.optionText}>📷 Take Photo</Text>
+          <TouchableOpacity style={styles.optionButton} onPress={openCamera}>
+            <Text style={styles.optionText}>📷 START CAMERA</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.optionButton} onPress={openGallery}>
-            <Text style={styles.optionText}>Choose From Gallery</Text>
+            <Text style={styles.optionText}>OPEN GALLERY</Text>
           </TouchableOpacity>
 
           {imageUri && (
-            <Text style={styles.imageText}>Image: {imageUri}</Text>
+            <View style={styles.imageContainer}>
+              <Image source={{ uri: imageUri }} style={styles.image} />
+              <TouchableOpacity style={styles.predictButton} onPress={predict}>
+                <Text style={styles.predictButtonText}>Predict</Text>
+              </TouchableOpacity>
+            </View>
           )}
+
           {prediction && (
             <Text style={styles.predictionText}>Prediction: {prediction}</Text>
           )}
@@ -124,13 +130,13 @@ const CamScreen = () => {
       {/* Navigation Bar */}
       <View style={styles.navigationBar}>
         <TouchableOpacity style={styles.navButton}>
-          <Text style={styles.navText}>Your crops</Text>
+          <Text style={styles.navText}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('CamScreen')}>
           <Text style={styles.navText}>Cam</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navButton}>
-          <Text style={styles.navText}>Dukaan</Text>
+          <Text style={styles.navText}>Chat</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navButton}>
           <Text style={styles.navText}>You</Text>
@@ -145,9 +151,6 @@ const styles = StyleSheet.create({
     flex: 1,
     resizeMode: 'cover',
   },
-  screen: {
-    flex: 1,
-  },
   contentContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -158,12 +161,18 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     marginVertical: 10,
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    backgroundColor: '#006400',
+    borderRadius: 30,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   optionText: {
     fontSize: 16,
+    color: 'white',
+    fontWeight: 'bold',
   },
   signOutButton: {
     position: 'absolute',
@@ -177,13 +186,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'white',
   },
-  imageText: {
+  imageContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  image: {
+    width: 300,
+    height: 300,
+    borderRadius: 10,
+    resizeMode: 'contain',
+  },
+  predictButton: {
     marginTop: 10,
-    fontSize: 14,
-    color: '#333',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#4caf50',
+    borderRadius: 30,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  predictButtonText: {
+    fontSize: 16,
+    color: 'white',
+    fontWeight: 'bold',
   },
   predictionText: {
-    marginTop: 10,
+    marginTop: 20,
     fontSize: 14,
     color: '#333',
   },
