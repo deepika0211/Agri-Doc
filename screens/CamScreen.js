@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Image, ImageBackground, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/core';
 import { auth } from '../firebase';
+import NavigationBar from './NavigationBar';
 
 const CamScreen = () => {
   const [imageUri, setImageUri] = useState(null);
   const [prediction, setPrediction] = useState(null);
-  const navigation = useNavigation();
 
   const handleSignOut = () => {
     auth
@@ -128,20 +127,7 @@ const CamScreen = () => {
       </View>
 
       {/* Navigation Bar */}
-      <View style={styles.navigationBar}>
-        <TouchableOpacity style={styles.navButton}>
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('CamScreen')}>
-          <Text style={styles.navText}>Cam</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Text style={styles.navText}>Chat</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Text style={styles.navText}>You</Text>
-        </TouchableOpacity>
-      </View>
+      <NavigationBar />
     </ImageBackground>
   );
 };
@@ -215,25 +201,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 14,
     color: '#333',
-  },
-  navigationBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 60,
-    backgroundColor: '#fff',
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
-  },
-  navButton: {
-    padding: 10,
-  },
-  navText: {
-    fontSize: 16,
-    color: '#000',
   },
 });
 
