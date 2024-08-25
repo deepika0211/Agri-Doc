@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Image, ImageBackground, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
 import { auth } from '../firebase';
 import NavigationBar from './NavigationBar';
 
 const CamScreen = () => {
   const [imageUri, setImageUri] = useState(null);
-  const [prediction, setPrediction] = useState(null);
+  const navigation = useNavigation();
 
   const handleSignOut = () => {
     auth
@@ -33,8 +33,7 @@ const CamScreen = () => {
     });
 
     if (!result.canceled) {
-      setImageUri(result.assets[0].uri); // Ensure that this is the correct way to access the image URI
-      setPrediction(null); // Reset prediction when a new image is taken
+      setImageUri(result.assets[0].uri);
     }
   };
 
@@ -54,37 +53,14 @@ const CamScreen = () => {
 
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
-      setPrediction(null);
     }
   };
 
-  const predict = async () => {
-    try {
-      if (typeof imageUri !== 'string') {
-        throw new Error('Invalid image URI');
-      }
-
-      const uriParts = imageUri.split('/');
-      const imageName = uriParts[uriParts.length - 1];
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
-
-      const formData = new FormData();
-      formData.append('file', {
-        uri: imageUri,
-        type: 'image/jpeg',
-        name: imageName,
-      });
-
-      const apiResponse = await axios.post('https://your-cloud-api-endpoint', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      setPrediction(apiResponse.data);
-    } catch (error) {
-      console.error('Error predicting:', error);
-      Alert.alert('Error', 'An error occurred while predicting.');
+  const navigateToOutputScreen = () => {
+    if (imageUri) {
+      navigation.navigate('OutputScreen', { imageUri });
+    } else {
+      Alert.alert('No Image', 'Please select an image before proceeding.');
     }
   };
 
@@ -93,11 +69,7 @@ const CamScreen = () => {
       source={require('../assets/CamPageImages/background.jpg')}
       style={styles.background}
     >
-      {/* Sign-Out Button at Top Right */}
-      <TouchableOpacity
-        onPress={handleSignOut}
-        style={styles.signOutButton}
-      >
+      <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
         <Text style={styles.signOutButtonText}>Sign out</Text>
       </TouchableOpacity>
 
@@ -114,19 +86,14 @@ const CamScreen = () => {
           {imageUri && (
             <View style={styles.imageContainer}>
               <Image source={{ uri: imageUri }} style={styles.image} />
-              <TouchableOpacity style={styles.predictButton} onPress={predict}>
-                <Text style={styles.predictButtonText}>Predict</Text>
+              <TouchableOpacity style={styles.predictButton} onPress={navigateToOutputScreen}>
+                <Text style={styles.predictButtonText}>Proceed</Text>
               </TouchableOpacity>
             </View>
-          )}
-
-          {prediction && (
-            <Text style={styles.predictionText}>Prediction: {prediction}</Text>
           )}
         </View>
       </View>
 
-      {/* Navigation Bar */}
       <NavigationBar />
     </ImageBackground>
   );
@@ -196,11 +163,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'white',
     fontWeight: 'bold',
-  },
-  predictionText: {
-    marginTop: 20,
-    fontSize: 14,
-    color: '#333',
   },
 });
 
