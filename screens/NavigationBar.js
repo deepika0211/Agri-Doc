@@ -16,7 +16,7 @@ const NavigationBar = () => {
       <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('ChatScreen')}>
         <Text style={styles.navText}>Chat</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('ProfileScreen')}>
+      <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('UserProfileScreen')}>
         <Text style={styles.navText}>You</Text>
       </TouchableOpacity>
     </View>
